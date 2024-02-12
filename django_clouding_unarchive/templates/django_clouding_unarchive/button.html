@@ -1,0 +1,107 @@
+<div class="django-unarchive">
+    <style>
+        .django-unarchive {
+            display: flex;
+        }
+        .django-unarchive .active{
+            color: green;
+        }
+        .django-unarchive .no-active{
+            color: red;
+        }
+        .loader {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            position: relative;
+            animation: rotate 1s linear infinite
+          }
+          .loader::before {
+            content: "";
+            box-sizing: border-box;
+            position: absolute;
+            inset: 0px;
+            border-radius: 50%;
+            border: 5px solid #000;
+            animation: prixClipFix 2s linear infinite ;
+          }
+      
+          @keyframes rotate {
+            100%   {transform: rotate(360deg)}
+          }
+      
+          @keyframes prixClipFix {
+              0%   {clip-path:polygon(50% 50%,0 0,0 0,0 0,0 0,0 0)}
+              25%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 0,100% 0,100% 0)}
+              50%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,100% 100%,100% 100%)}
+              75%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 100%)}
+              100% {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 0)}
+          }
+    </style>
+    <span id="server_status_display"></span>
+    <button id="unarchive_button" type="button" disabled="disabled" class="{{ css_classes }}">{% if label %}{{ label }}{% else %}Wake up the server{% endif %}</button>
+    <span id="spinner" class="loader" style="visibility:hidden"></span> 
+    <script type="module">
+        function show_spinner(){
+            spinner.style.visibility = 'visible';
+        }
+        
+        function hide_spinner(){
+            spinner.style.visibility = 'hidden';
+        }
+
+        function update_status_until_active(){
+            fetch("{% url 'django_clouding_unarchive:server-status' %}")
+            .then(response => response.text())
+            .then(response_text => {
+                console.log(response_text);
+                if(response_text != "Active" ){
+                    unarchive_button.disabled = "disabled";
+                    server_status_display.innerHtml=`Server is <span class="no-active">${response_text}</span>`;
+                    setTimeout(update_status_until_active, 5000);
+                } else {
+                    server_status_display.innerHtml = `Server is <span class="active">${response_text}</span>`;
+                    hide_spinner();
+                }
+            }).catch(err => {
+                console.log(err);
+                server_status_display.text = "Error while waking up the server";
+                unarchive_button.disabled = "";
+            })
+        }
+
+        show_spinner();
+        fetch("{% url 'django_clouding_unarchive:server-status' %}")
+        .then(response => response.text())
+        .then(response_text => {
+            console.log(response_text);
+            if(response_text != "Active" ){
+                server_status_display.innerHtml=`Server is <span class="no-active">${response_text}</span>`;
+                unarchive_button.disabled = "";
+            } else {
+                server_status_display.innerHtml = `Server is <span class="active">${response_text}</span>`;
+            }
+        }).catch(err => {
+            console.log(err);
+            server_status_display.text = "Error while waking up the server";
+        })
+        .finally(() => {
+            hide_spinner();
+        });
+
+        unarchive_button.addEventListener("click", () => {
+            show_spinner();
+            unarchive_button.disabled = "disabled";
+            fetch("{% url 'django_clouding_unarchive:unarchive-server' %}")
+            .then(response => response.text())
+            .then(response_text => {
+                console.log(response_text);
+                update_status_until_active();
+            }).catch(err => {
+                console.log(err);
+                server_status_display.innerHtml='<span class="no-active">Error while waking up the server</span>';
+                unarchive_button.disabled = "";
+            });
+        });
+    </script>
+</div>
