@@ -3,6 +3,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from .api_models import CloudingAPI
 from .exceptions import CloudingAPIError
+
+
 class CloudingAPIView(LoginRequiredMixin, View):
     server = CloudingAPI()
 

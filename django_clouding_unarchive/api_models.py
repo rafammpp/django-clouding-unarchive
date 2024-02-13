@@ -3,6 +3,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from .exceptions import CloudingAPIError
 
+
 class CloudingAPI:
     def __init__(self, api_key=None, server_id=None):
         self.api_key = api_key or settings.CLOUDING_API_KEY
@@ -28,7 +29,7 @@ class CloudingAPI:
             data = response.json()
             return data['status']
         else:
-            raise CloudingAPIError(data)
+            raise CloudingAPIError(response.json())
     
     def unarchive(self):
         url = f"https://api.clouding.io/v1/servers/{self.server_id}/unarchive"

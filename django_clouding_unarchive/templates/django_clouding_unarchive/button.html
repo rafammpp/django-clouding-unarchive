@@ -3,20 +3,24 @@
         .django-unarchive {
             display: flex;
         }
+
         .django-unarchive .active{
             color: green;
         }
+
         .django-unarchive .no-active{
             color: red;
         }
+
         .loader {
             width: 48px;
             height: 48px;
             border-radius: 50%;
             position: relative;
             animation: rotate 1s linear infinite
-          }
-          .loader::before {
+        }
+
+        .loader::before {
             content: "";
             box-sizing: border-box;
             position: absolute;
@@ -24,22 +28,31 @@
             border-radius: 50%;
             border: 5px solid #000;
             animation: prixClipFix 2s linear infinite ;
-          }
-      
-          @keyframes rotate {
-            100%   {transform: rotate(360deg)}
-          }
-      
-          @keyframes prixClipFix {
-              0%   {clip-path:polygon(50% 50%,0 0,0 0,0 0,0 0,0 0)}
-              25%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 0,100% 0,100% 0)}
-              50%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,100% 100%,100% 100%)}
-              75%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 100%)}
-              100% {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 0)}
-          }
+        }
+    
+        @keyframes rotate {
+        100%   {transform: rotate(360deg)}
+        }
+    
+        @keyframes prixClipFix {
+            0%   {clip-path:polygon(50% 50%,0 0,0 0,0 0,0 0,0 0)}
+            25%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 0,100% 0,100% 0)}
+            50%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,100% 100%,100% 100%)}
+            75%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 100%)}
+            100% {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 0)}
+        }
     </style>
     <span id="server_status_display"></span>
-    <button id="unarchive_button" type="button" disabled="disabled" class="{{ css_classes }}">{% if label %}{{ label }}{% else %}Wake up the server{% endif %}</button>
+    <button 
+        id="unarchive_button"
+        type="button"
+        disabled="disabled"
+        class="{{ css_classes }}"
+        data-on-success-url="{{ on_success_url }}"
+        data-test-on-success-url="{{ test_on_success_url }}"
+        data-status-url="{% url 'django_clouding_unarchive:server-status' %}"
+        data-unarchive-url="{% url 'django_clouding_unarchive:unarchive-server' %}"
+    >{% if label %}{{ label }}{% else %}Wake up the server{% endif %}</button>
     <span id="spinner" class="loader" style="visibility:hidden"></span> 
     <script type="module">
         function show_spinner(){
@@ -50,17 +63,47 @@
             spinner.style.visibility = 'hidden';
         }
 
+        function display_status(){
+            let status = server_status_display.dataset.status;
+            if(status == "Active"){
+                server_status_display.innerHTML = `Server is <span class="active">${status}</span>`;
+            } else {
+                server_status_display.innerHTML = `Server is <span class="no-active">${status}</span>`;
+            }
+            if
+            
+        
+            server_status_display.innerHTML = `Server is <span class="active">Active</span>`;
+            server_status_display.innerHTML =`Server is <span class="no-active">${response_text}</span>`;
+            server_status_display.innerHTML = `Server is <span class="active">Active</span> Server is ready, <a href="${ unarchive_button.dataset.onSuccessUrl }" target="_blank">Click here</a>`;
+
+        }
+
+        function update_status_until_active_success_url(url){
+            fetch(url)
+            .then(response => response.text())
+            .then(response_text => {
+                server_status_display.innerHTML = `Server is <span class="active">Active</span> Server is ready, <a href="{{ on_success_url }}" target="_blank">Click here</a>`;
+            }).catch(err => {
+                console.log(err);
+                setTimeout(() => update_status_until_active_success_url(url), 5000);
+            });
+        }
+
         function update_status_until_active(){
-            fetch("{% url 'django_clouding_unarchive:server-status' %}")
+            fetch(unarchive_button.dataset.statusUrl)
             .then(response => response.text())
             .then(response_text => {
                 console.log(response_text);
+                server_status_display.dataset.status = response_text;
+                display_status();
                 if(response_text != "Active" ){
                     unarchive_button.disabled = "disabled";
-                    server_status_display.innerHtml=`Server is <span class="no-active">${response_text}</span>`;
                     setTimeout(update_status_until_active, 5000);
                 } else {
-                    server_status_display.innerHtml = `Server is <span class="active">${response_text}</span>`;
+                    if( unarchive_button.dataset.onSuccessUrl && unarchive_button.dataset.testOnSuccessUrl ){
+                        update_status_until_active_success_url(unarchive_button.dataset.testOnSuccessUrl);
+                    }
                     hide_spinner();
                 }
             }).catch(err => {
@@ -70,16 +113,32 @@
             })
         }
 
+        unarchive_button.addEventListener("click", () => {
+            show_spinner();
+            unarchive_button.disabled = "disabled";
+            fetch(unarchive_button.dataset.unarchiveUrl)
+            .then(response => response.text())
+            .then(response_text => {
+                console.log(response_text);
+                update_status_until_active();
+            }).catch(err => {
+                console.log(err);
+                server_status_display.innerHTML='<span class="no-active">Error while waking up the server</span>';
+                unarchive_button.disabled = "";
+            });
+        });
+
+
         show_spinner();
-        fetch("{% url 'django_clouding_unarchive:server-status' %}")
+        fetch(unarchive_button.dataset.statusUrl)
         .then(response => response.text())
         .then(response_text => {
             console.log(response_text);
             if(response_text != "Active" ){
-                server_status_display.innerHtml=`Server is <span class="no-active">${response_text}</span>`;
+                server_status_display.innerHTML=`Server is <span class="no-active">${response_text}</span>`;
                 unarchive_button.disabled = "";
             } else {
-                server_status_display.innerHtml = `Server is <span class="active">${response_text}</span>`;
+                server_status_display.innerHTML = `Server is <span class="active">${response_text}</span>`;
             }
         }).catch(err => {
             console.log(err);
@@ -89,19 +148,6 @@
             hide_spinner();
         });
 
-        unarchive_button.addEventListener("click", () => {
-            show_spinner();
-            unarchive_button.disabled = "disabled";
-            fetch("{% url 'django_clouding_unarchive:unarchive-server' %}")
-            .then(response => response.text())
-            .then(response_text => {
-                console.log(response_text);
-                update_status_until_active();
-            }).catch(err => {
-                console.log(err);
-                server_status_display.innerHtml='<span class="no-active">Error while waking up the server</span>';
-                unarchive_button.disabled = "";
-            });
-        });
+        
     </script>
 </div>
