@@ -6,13 +6,17 @@ from .exceptions import CloudingAPIError
 
 
 class CloudingAPIView(LoginRequiredMixin, View):
-    server = CloudingAPI()
+
+    def get_server(self, request):
+        server_id = request.GET.get('server_id')
+        return CloudingAPI(server_id)
 
 
 class IsActiveView(CloudingAPIView):
     def get(self, request):
+        server = self.get_server(request)
         try:
-            if self.server.is_active():
+            if server.is_active():
                 return HttpResponse('active')
             return HttpResponse('inactive')
         except CloudingAPIError as e:
@@ -21,15 +25,17 @@ class IsActiveView(CloudingAPIView):
 
 class UnarchiveView(CloudingAPIView):
     def get(self, request):
+        server = self.get_server(request)
         try:
-            return HttpResponse(self.server.unarchive())
+            return HttpResponse(server.unarchive())
         except CloudingAPIError as e:
             return HttpResponseBadRequest(str(e))
 
 
 class StatusView(CloudingAPIView):
     def get(self, request):
+        server = self.get_server(request)
         try:
-            return HttpResponse(self.server.get_status())
+            return HttpResponse(server.get_status())
         except CloudingAPIError as e:
             return HttpResponseBadRequest(str(e))

@@ -12,12 +12,12 @@ class CloudingAPI:
         if not self.api_key:
             raise ImproperlyConfigured("Missing CLOUDING_API_KEY in settings")
         if not self.server_id:
-            raise ImproperlyConfigured("Missing CLOUDING_SERVER_ID in settings")
+            raise ImproperlyConfigured("Missing CLOUDING_SERVER_ID")
     
     def get_status(self):
         """@return Enum: 
             'Creating' 'Starting' 'Active' 'Stopped' 'Stopping' 'Rebooting' 'Resize' 'Unarchiving' 'Archived' 'Archiving' 'Pending' 'ResettingPassword' 'RestoringBackup' 'RestoringSnapshot' 'Deleted' 'Deleting' 'Error' 'Unknown'
-        """        
+        """
         url = f"https://api.clouding.io/v1/servers/{self.server_id}"
         headers = {
             'X-API-KEY': self.api_key,

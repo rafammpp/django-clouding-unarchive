@@ -42,63 +42,83 @@
             100% {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 0)}
         }
     </style>
-    <span id="server_status_display"></span>
-    <button 
-        id="unarchive_button"
+    <span class="server_status_display"></span>
+    <button
         type="button"
         disabled="disabled"
-        class="{{ css_classes }}"
+        class="unarchive_button {{ css_classes }}"
         data-on-success-url="{{ on_success_url }}"
         data-test-on-success-url="{{ test_on_success_url }}"
-        data-status-url="{% url 'django_clouding_unarchive:server-status' %}"
-        data-unarchive-url="{% url 'django_clouding_unarchive:unarchive-server' %}"
+        data-status-url="{% url 'django_clouding_unarchive:server-status' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
+        data-unarchive-url="{% url 'django_clouding_unarchive:unarchive-server' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
+        data-ready="false"
+        data-setup=""
     >{% if label %}{{ label }}{% else %}Wake up the server{% endif %}</button>
-    <span id="spinner" class="loader" style="visibility:hidden"></span> 
+    <span class="loader spinner" style="visibility:hidden"></span> 
     <script type="module">
-        function show_spinner(){
+        function show_spinner(container){
+            spinner = container.querySelector('.spinner');
             spinner.style.visibility = 'visible';
         }
         
-        function hide_spinner(){
+        function hide_spinner(container){
+            spinner = container.querySelector('.spinner');
             spinner.style.visibility = 'hidden';
         }
 
-        function display_status(){
+        function display_status(container){
+            let server_status_display = container.querySelector('.server_status_display');
+            let unarchive_button = container.querySelector('.unarchive_button');
             let status = server_status_display.dataset.status;
-            if(status == "Active"){
+            let url = unarchive_button.dataset.onSuccessUrl;
+            let test_url = unarchive_button.dataset.testOnSuccessUrl;
+            let ready = server_status_display.dataset.ready;
+            
+            if (status == "Error"){
+                server_status_display.innerHTML = `Error while waking up the server`;
+                unarchive_button.disabled = "";
+                return;
+            }
+
+            if (status == "Active"){
+                unarchive_button.disabled = "disabled";
                 server_status_display.innerHTML = `Server is <span class="active">${status}</span>`;
+
+                if (url && (test_url && ready || !test_url)){
+                    server_status_display.innerHTML += `Server is ready, <a href="${url}" target="_blank">Click here</a>`;
+                } else if (url && test_url && !ready)
+                    server_status_display.innerHTML += `Waiting for server to be ready...`;
             } else {
                 server_status_display.innerHTML = `Server is <span class="no-active">${status}</span>`;
+                unarchive_button.disabled = "";
             }
-            if
-            
-        
-            server_status_display.innerHTML = `Server is <span class="active">Active</span>`;
-            server_status_display.innerHTML =`Server is <span class="no-active">${response_text}</span>`;
-            server_status_display.innerHTML = `Server is <span class="active">Active</span> Server is ready, <a href="${ unarchive_button.dataset.onSuccessUrl }" target="_blank">Click here</a>`;
-
         }
 
-        function update_status_until_active_success_url(url){
+        function update_status_until_active_success_url(url, container){
+            let server_status_display = container.querySelector('.server_status_display');
             fetch(url)
             .then(response => response.text())
             .then(response_text => {
-                server_status_display.innerHTML = `Server is <span class="active">Active</span> Server is ready, <a href="{{ on_success_url }}" target="_blank">Click here</a>`;
+                server_status_display.dataset.ready = true;
+                display_status(container);
             }).catch(err => {
-                console.log(err);
+                server_status_display.dataset.ready = false;
+                display_status(container);
                 setTimeout(() => update_status_until_active_success_url(url), 5000);
             });
         }
 
-        function update_status_until_active(){
+        function update_status_until_active(container){
+            let server_status_display = container.querySelector('.server_status_display');
+            let unarchive_button = container.querySelector('.unarchive_button');
+
             fetch(unarchive_button.dataset.statusUrl)
             .then(response => response.text())
             .then(response_text => {
                 console.log(response_text);
                 server_status_display.dataset.status = response_text;
-                display_status();
+                display_status(container);
                 if(response_text != "Active" ){
-                    unarchive_button.disabled = "disabled";
                     setTimeout(update_status_until_active, 5000);
                 } else {
                     if( unarchive_button.dataset.onSuccessUrl && unarchive_button.dataset.testOnSuccessUrl ){
@@ -108,13 +128,16 @@
                 }
             }).catch(err => {
                 console.log(err);
-                server_status_display.text = "Error while waking up the server";
+                server_status_display.dataset.status = "Error";
+                display_status(container);
                 unarchive_button.disabled = "";
-            })
+            });
         }
 
-        unarchive_button.addEventListener("click", () => {
-            show_spinner();
+        function unarchive(event){
+            container = event.target.parentElement;
+            let unarchive_button = event.target;
+            show_spinner(container);
             unarchive_button.disabled = "disabled";
             fetch(unarchive_button.dataset.unarchiveUrl)
             .then(response => response.text())
@@ -123,31 +146,34 @@
                 update_status_until_active();
             }).catch(err => {
                 console.log(err);
-                server_status_display.innerHTML='<span class="no-active">Error while waking up the server</span>';
+                server_status_display.dataset.status = "Error";
+                display_status(container);
                 unarchive_button.disabled = "";
             });
-        });
+        }
 
+        for (let button of document.querySelectorAll('.unarchive_button')){
+            if( button.dataset.setup == "setup" )
+                continue;
+            
+            button.dataset.setup = "setup";
+            let container = button.parentElement;
+            button.addEventListener("click", unarchive);
 
-        show_spinner();
-        fetch(unarchive_button.dataset.statusUrl)
-        .then(response => response.text())
-        .then(response_text => {
-            console.log(response_text);
-            if(response_text != "Active" ){
-                server_status_display.innerHTML=`Server is <span class="no-active">${response_text}</span>`;
-                unarchive_button.disabled = "";
-            } else {
-                server_status_display.innerHTML = `Server is <span class="active">${response_text}</span>`;
-            }
-        }).catch(err => {
-            console.log(err);
-            server_status_display.text = "Error while waking up the server";
-        })
-        .finally(() => {
-            hide_spinner();
-        });
-
-        
+            show_spinner(container);
+            fetch(button.dataset.statusUrl)
+            .then(response => response.text())
+            .then(response_text => {
+                console.log(response_text);
+                server_status_display.dataset.status = response_text;
+                display_status(container);
+            }).catch(err => {
+                console.log(err);
+                server_status_display.dataset.status = "Error";
+                display_status(container);
+            }).finally(() => {
+                hide_spinner();
+            });
+        }
     </script>
 </div>
