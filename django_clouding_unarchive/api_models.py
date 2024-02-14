@@ -47,9 +47,6 @@ class CloudingAPI:
         else:
             raise CloudingAPIError(data)
 
-    def is_active(self):
-        return self.get_status() == 'Active'
-
     def is_creating(self):
         return self.get_status() == 'Creating'
 
