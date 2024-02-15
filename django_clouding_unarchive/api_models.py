@@ -39,8 +39,8 @@ class CloudingAPI:
         }
         
         response = requests.post(url, headers=headers)
+        data = response.json()
         if response.ok:
-            data = response.json()
             if data['status'] == "errored": # posible status: "pending" "inProgress" "completed" "errored"
                 raise CloudingAPIError(data)
             return data['status']

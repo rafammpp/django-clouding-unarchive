@@ -9,6 +9,7 @@ class CloudingAPIView(LoginRequiredMixin, View):
 
     def get_server(self, request):
         server_id = request.GET.get('server_id')
+        print(request.GET)
         return CloudingAPI(server_id)
 
 
