@@ -57,12 +57,12 @@
     <span class="loader spinner" style="visibility:hidden"></span> 
     <script type="module">
         function show_spinner(container){
-            spinner = container.querySelector('.spinner');
+            let spinner = container.querySelector('.spinner');
             spinner.style.visibility = 'visible';
         }
         
         function hide_spinner(container){
-            spinner = container.querySelector('.spinner');
+            let spinner = container.querySelector('.spinner');
             spinner.style.visibility = 'hidden';
         }
 
@@ -96,15 +96,17 @@
 
         function update_status_until_active_success_url(url, container){
             let server_status_display = container.querySelector('.server_status_display');
-            fetch(url)
-            .then(response => response.text())
-            .then(response_text => {
-                server_status_display.dataset.ready = true;
+            // fetch('https://corsproxy.io/?' + encodeURIComponent(url), {method: 'HEAD'})
+            fetch(url, {method: 'HEAD'})
+            .then(response => {
+                server_status_display.dataset.ready = response.ok;
                 display_status(container);
+                if (!response.ok)
+                    return Promise.reject(response);
             }).catch(err => {
                 server_status_display.dataset.ready = false;
                 display_status(container);
-                setTimeout(() => update_status_until_active_success_url(url), 5000);
+                setTimeout(() => update_status_until_active_success_url(url, container), 5000);
             });
         }
 
@@ -119,12 +121,12 @@
                 server_status_display.dataset.status = response_text;
                 display_status(container);
                 if(response_text != "Active" ){
-                    setTimeout(update_status_until_active, 5000);
+                    setTimeout(() => update_status_until_active(container), 5000);
                 } else {
                     if( unarchive_button.dataset.onSuccessUrl && unarchive_button.dataset.testOnSuccessUrl ){
-                        update_status_until_active_success_url(unarchive_button.dataset.testOnSuccessUrl);
+                        update_status_until_active_success_url(unarchive_button.dataset.onSuccessUrl, container);
                     }
-                    hide_spinner();
+                    hide_spinner(container);
                 }
             }).catch(err => {
                 console.log(err);
@@ -135,15 +137,16 @@
         }
 
         function unarchive(event){
-            container = event.target.parentElement;
+            let container = event.target.parentElement;
             let unarchive_button = event.target;
+            let server_status_display = container.querySelector('.server_status_display');
             show_spinner(container);
             unarchive_button.disabled = "disabled";
             fetch(unarchive_button.dataset.unarchiveUrl)
             .then(response => response.text())
             .then(response_text => {
                 console.log(response_text);
-                update_status_until_active();
+                update_status_until_active(container);
             }).catch(err => {
                 console.log(err);
                 server_status_display.dataset.status = "Error";
@@ -155,7 +158,7 @@
         for (let button of document.querySelectorAll('.unarchive_button')){
             if( button.dataset.setup == "setup" )
                 continue;
-            
+            let server_status_display = button.parentElement.querySelector('.server_status_display');
             button.dataset.setup = "setup";
             let container = button.parentElement;
             button.addEventListener("click", unarchive);
@@ -166,13 +169,15 @@
             .then(response_text => {
                 console.log(response_text);
                 server_status_display.dataset.status = response_text;
+                if (response_text == "Active")
+                    server_status_display.dataset.ready = true;
                 display_status(container);
             }).catch(err => {
                 console.log(err);
                 server_status_display.dataset.status = "Error";
                 display_status(container);
             }).finally(() => {
-                hide_spinner();
+                hide_spinner(container);
             });
         }
     </script>

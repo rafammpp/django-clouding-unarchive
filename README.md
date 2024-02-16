@@ -1,7 +1,12 @@
 # Django Clouding Unarchive
+This app allows you to unarchive a server in clouding.io with a single click in the Django admin panel. It is particularly useful for teams that require an expensive server occasionally but do not want to grant access to the clouding.io panel to all team members.
+
 
 ## How to install
-Install the app with pip.
+Install the app with pip. For now, it is not available in PyPi, so you need to install it from the git repository:
+```
+pip install git+https://github.com/rafammpp/django-clouding-unarchive/
+```
 
 In settings place this two vars:
 ```
@@ -52,6 +57,4 @@ You can include multiple buttons in the same template, each with different confi
 
 
 ## My use case
-I use Plausible Analytics to track my website. I have a small server in one provider that I only use to track the pageviews events. But for making queries and retrieve the data, like the number of pageviews for the last ten years, I need a way more powerful server. So I have a second server in clouding.io that I only use to make queries to the database and retrieve the data. To avoid the complete cost of having the server running 24/7, almost 300$/month, I made this app to unarchive the server only when I or the web editors need it. I only need to click a button in the django admin panel and the server will be ready in 40 seconds. When the server don't have any activity for 50 minutes, it will be archived again. This way I only pay some cents per hour when I need it.
-
-So, if you have a team and need an expensive server only for some tasks, and you don't want to give access to the clouding.io panel to all the team, this app is for you.
+I use Plausible Analytics to track my website. I have a small server in one provider that I only use to track the pageview events. However, for querying and retrieving data, such as the number of pageviews for the last ten years, I require a more powerful server. To avoid the high cost of running the server 24/7 (approximately $300/month), I developed this Django Clouding Unarchive app. It allows me to unarchive the server with a single click in the Django admin panel, making it ready for use in just 40 seconds. When the server remains inactive for 50 minutes, it is automatically archived again, resulting in a cost of only a few cents per hour when needed. This app is particularly useful for teams that require an expensive server occasionally but do not want to grant access to the clouding.io panel to all team members.
