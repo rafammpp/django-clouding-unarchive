@@ -1,7 +1,6 @@
 import json
 from django.test import RequestFactory, TestCase, override_settings
-from django.core.exceptions import ImproperlyConfigured
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 from django.urls import reverse
 

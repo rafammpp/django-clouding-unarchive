@@ -1,6 +1,6 @@
 from django.test import TestCase, override_settings
 from django.core.exceptions import ImproperlyConfigured
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from .api_models import CloudingAPI
 from .exceptions import CloudingAPIError
