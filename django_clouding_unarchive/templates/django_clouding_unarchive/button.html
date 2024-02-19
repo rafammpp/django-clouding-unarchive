@@ -2,6 +2,14 @@
     <style>
         .django-unarchive {
             display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            margin: 1rem 0;
+            gap: 1rem;
+        }
+
+        .django-unarchive .server_status_display {
+            text-transform: capitalize;
         }
 
         .django-unarchive .active{
@@ -12,21 +20,21 @@
             color: red;
         }
 
-        .loader {
-            width: 48px;
-            height: 48px;
+        .django-unarchive .loader {
+            width: 1.7rem;
+            height: 1.7rem;
             border-radius: 50%;
             position: relative;
             animation: rotate 1s linear infinite
         }
 
-        .loader::before {
+        .django-unarchive .loader::before {
             content: "";
             box-sizing: border-box;
             position: absolute;
             inset: 0px;
             border-radius: 50%;
-            border: 5px solid #000;
+            border: 0.25rem solid #bababa;
             animation: prixClipFix 2s linear infinite ;
         }
     
@@ -48,12 +56,14 @@
         disabled="disabled"
         class="unarchive_button {{ css_classes }}"
         data-on-success-url="{{ on_success_url }}"
-        data-test-on-success-url="{{ test_on_success_url }}"
+        data-test-on-success-url="{% if test_on_success_url %}test{% endif %}"
         data-status-url="{% url 'django_clouding_unarchive:server-status' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
         data-unarchive-url="{% url 'django_clouding_unarchive:unarchive-server' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
-        data-ready="false"
+        data-ready=""
+        data-friendly-messages="{% if friendly_messages %}friendly{% endif %}"
+        data-server-name="{{ server_name }}"
         data-setup=""
-    >{% if label %}{{ label }}{% else %}Wake up the server{% endif %}</button>
+    >{% if label %}{{ label }}{% else %}Wake it up{% endif %}</button>
     <span class="loader spinner" style="visibility:hidden"></span> 
     <script type="module">
         function show_spinner(container){
@@ -71,38 +81,44 @@
             let unarchive_button = container.querySelector('.unarchive_button');
             let status = server_status_display.dataset.status;
             let url = unarchive_button.dataset.onSuccessUrl;
-            let test_url = unarchive_button.dataset.testOnSuccessUrl;
+            let test_url = unarchive_button.dataset.testOnSuccessUrl != "";
             let ready = server_status_display.dataset.ready;
-            
+            let friendly_messages = unarchive_button.dataset.friendlyMessages != "";
+            let server_name = unarchive_button.dataset.serverName || "the server";
+
             if (status == "Error"){
-                server_status_display.innerHTML = `Error while waking up the server`;
+                server_status_display.innerHTML = `Error while waking up ${server_name}... Please try again later.`;
                 unarchive_button.disabled = "";
                 return;
             }
 
             if (status == "Active"){
                 unarchive_button.disabled = "disabled";
-                server_status_display.innerHTML = `Server is <span class="active">${status}</span>`;
-
                 if (url && (test_url && ready || !test_url)){
-                    server_status_display.innerHTML += `Server is ready, <a href="${url}" target="_blank">Click here</a>`;
+                    server_status_display.innerHTML = `${server_name} is ready, <a href="${url}" target="_blank">Click here</a>`;
                 } else if (url && test_url && !ready)
-                    server_status_display.innerHTML += `Waiting for server to be ready...`;
+                    server_status_display.innerHTML = `Waiting for ${server_name} to be ready...`;
+                else 
+                    server_status_display.innerHTML = `${server_name} is <span class="active">${status}</span>`;
             } else {
-                server_status_display.innerHTML = `Server is <span class="no-active">${status}</span>`;
+                if (status == "Archived" && friendly_messages)
+                    status = "sleeping";
+                else if (friendly_messages)
+                    status = "waking up...";
+                
+                server_status_display.innerHTML = `${server_name} is <span class="no-active">${status}</span>`;
                 unarchive_button.disabled = "";
             }
         }
 
         function update_status_until_active_success_url(url, container){
             let server_status_display = container.querySelector('.server_status_display');
-            // fetch('https://corsproxy.io/?' + encodeURIComponent(url), {method: 'HEAD'})
-            fetch(url, {method: 'HEAD'})
-            .then(response => {
-                server_status_display.dataset.ready = response.ok;
-                display_status(container);
+            fetch('{% url "django_clouding_unarchive:server-is-ready" %}?url=' + encodeURIComponent(url), {method: 'HEAD'})
+            .then(response => { 
                 if (!response.ok)
                     return Promise.reject(response);
+                server_status_display.dataset.ready = response.ok;
+                display_status(container);
             }).catch(err => {
                 server_status_display.dataset.ready = false;
                 display_status(container);

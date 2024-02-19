@@ -45,6 +45,7 @@ You can also specify some vars to configure the button, all are optional:
 - on_success_url: the url to link after the unarchive process is done.
 - test_on_success_url: "true" or "false". This will make an http request to also test the availability of the server. If the server is not available, it will wait until it is available and then show the link.
 - label: the label of the button. Default is "Wake up the server".
+- friendly_messages: "true" or "false". If true, it will show more human friendly messages, like "The server is waking up" instead of "The server is unarchiving".
 
 Example:
 ```

@@ -1,3 +1,4 @@
+import requests
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
@@ -49,3 +50,13 @@ class StatusView(CloudingAPIView):
             return HttpResponse(server.get_status())
         except CloudingAPIError as e:
             return HttpResponseBadRequest(str(e))
+
+
+class ServerIsReadyView(CloudingAPIView):
+    def get(self, request):
+        url = request.GET.get('url')
+        print(url)
+        if not url:
+            return HttpResponseBadRequest('url parameter is required')
+        response = requests.head(url)
+        return HttpResponse(status=response.status_code)
