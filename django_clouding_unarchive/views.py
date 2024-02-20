@@ -5,6 +5,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.views import View
 from .api_models import CloudingAPI
 from .exceptions import CloudingAPIError
+from requests.exceptions import ConnectionError
 
 
 class CloudingAPIView(LoginRequiredMixin, View):
@@ -55,8 +56,10 @@ class StatusView(CloudingAPIView):
 class ServerIsReadyView(CloudingAPIView):
     def get(self, request):
         url = request.GET.get('url')
-        print(url)
-        if not url:
-            return HttpResponseBadRequest('url parameter is required')
-        response = requests.head(url)
-        return HttpResponse(status=response.status_code)
+        try:
+            if not url:
+                return HttpResponseBadRequest('url parameter is required')
+            response = requests.head(url)
+            return HttpResponse('ready' if response.ok else 'not ready')
+        except ConnectionError:
+            return HttpResponse('not ready')

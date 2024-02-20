@@ -64,7 +64,10 @@
     data-setup=""
     data-status=""
     data-ready=""
-><span class="server_status_display"></span><span class="loader spinner" style="visibility:hidden"></span> </button>
+>
+    <span class="server_status_display"></span>
+    <span class="loader spinner" style="visibility:hidden"></span>
+</button>
 
 <script type="module">
     function show_spinner(button){
@@ -103,10 +106,10 @@
             button.disabled = "";
         } else if (status == "Archived"){
             button.disabled = "";
-            let message = "Archived";
             if (friendly_messages)
-                message = "sleeping";
-            server_status_display.innerHTML = `${server_name} is <span class="no-active">${message}</span>`;
+                server_status_display.innerHTML = `Wake up ${server_name}`;
+            else
+                server_status_display.innerHTML = `${server_name} is <span class="no-active">${message}</span>`;
         } else {
             button.disabled = "disabled";
             if (friendly_messages)
@@ -119,17 +122,23 @@
     function update_status_until_active_success_url(button){
         let server_status_display = button.querySelector('.server_status_display');
         let url = button.dataset.onSuccessUrl;
-        fetch('{% url "django_clouding_unarchive:server-is-ready" %}?url=' + encodeURIComponent(url), {method: 'HEAD'})
-        .then(response => { 
-            if (!response.ok)
-                return Promise.reject(response);
-            
-            button.dataset.ready = "ready";
-            display_status(button);
+        fetch('{% url "django_clouding_unarchive:server-is-ready" %}?url=' + encodeURIComponent(url))
+        .then(response => response.text())
+        .then(text => {
+            if (text == "ready"){
+                button.dataset.ready = "ready";
+                display_status(button);
+                hide_spinner(button);
+            } else {
+                button.dataset.ready = "";
+                display_status(button);
+                setTimeout(() => update_status_until_active_success_url(button), 5000);
+            }
         }).catch(err => {
+            console.log(err);
             button.dataset.ready = "";
+            button.dataset.status = "Error";
             display_status(button);
-            setTimeout(() => update_status_until_active_success_url(button), 5000);
         });
     }
 
@@ -150,8 +159,8 @@
                 } else if (button.dataset.onSuccessUrl){
                     button.dataset.ready = "ready";
                     display_status(button);
+                    hide_spinner(button);
                 }
-                hide_spinner(button);
             }
         }).catch(err => {
             console.log(err);
@@ -167,10 +176,8 @@
 
         button.dataset.setup = "setup";
         button.addEventListener("click", event => {
-            let button = event.target;
-            let ready = button.dataset.ready != "";
-            // TODO sometimes onSuccessUrl is undefined. See why.
-            if (ready){
+            let button = event.currentTarget;
+            if (button.dataset.ready){
                 console.log("url: ", button.dataset.onSuccessUrl);
                 window.open(button.dataset.onSuccessUrl, '_blank');
                 return;
@@ -196,8 +203,11 @@
         .then(response_text => {
             console.log(response_text);
             button.dataset.status = response_text;
-            if (response_text == "Active")
+            if (response_text == "Active" && button.dataset.onSuccessUrl && button.dataset.testOnSuccessUrl){
+                update_status_until_active_success_url(button);
+            } else if (response_text == "Active"){
                 button.dataset.ready = "ready";
+            }
             display_status(button);
         }).catch(err => {
             console.log(err);
