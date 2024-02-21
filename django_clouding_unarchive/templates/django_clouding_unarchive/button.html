@@ -6,18 +6,23 @@
         margin: 1rem 0;
         gap: 1rem;
         cursor: pointer;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        background-color: var(--button-bg);
+        color: var(--button-fg);
     }
 
-    .django-unarchive .server_status_display {
-        text-transform: capitalize;
+    .django-unarchive:hover {
+        background: var(--button-hover-bg);
     }
 
-    .django-unarchive .active{
-        color: green;
+    .django-unarchive .server_status_display::first-letter {
+        text-transform: uppercase;
     }
 
-    .django-unarchive .no-active{
-        color: red;
+    .django-unarchive .active, .django-unarchive .no-active {
+        font-weight: bold;
     }
 
     .django-unarchive .loader {
@@ -34,7 +39,7 @@
         position: absolute;
         inset: 0px;
         border-radius: 50%;
-        border: 0.25rem solid #bababa;
+        border: 0.25rem solid var(--button-fg);
         animation: prixClipFix 2s linear infinite ;
     }
 
@@ -59,12 +64,12 @@
     data-test-on-success-url="{% if test_on_success_url %}test{% endif %}"
     data-status-url="{% url 'django_clouding_unarchive:server-status' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
     data-unarchive-url="{% url 'django_clouding_unarchive:unarchive-server' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
+    data-server-name-url="{% url 'django_clouding_unarchive:server-name' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
     data-friendly-messages="{% if friendly_messages %}friendly{% endif %}"
     data-server-name="{{ server_name }}"
     data-setup=""
     data-status=""
-    data-ready=""
->
+    data-ready="">
     <span class="server_status_display"></span>
     <span class="loader spinner" style="visibility:hidden"></span>
 </button>
@@ -73,11 +78,13 @@
     function show_spinner(button){
         let spinner = button.querySelector('.spinner');
         spinner.style.visibility = 'visible';
+        spinner.style.removeProperty("width");
     }
     
     function hide_spinner(button){
         let spinner = button.querySelector('.spinner');
         spinner.style.visibility = 'hidden';
+        spinner.style.width = "0";
     }
 
     function display_status(button){
@@ -109,7 +116,7 @@
             if (friendly_messages)
                 server_status_display.innerHTML = `Wake up ${server_name}`;
             else
-                server_status_display.innerHTML = `${server_name} is <span class="no-active">${message}</span>`;
+                server_status_display.innerHTML = `${server_name} is <span class="no-active">Archived</span>`;
         } else {
             button.disabled = "disabled";
             if (friendly_messages)
@@ -196,6 +203,15 @@
                 button.disabled = "";
             });
         });
+        
+        if (!button.dataset.serverName)
+            fetch(button.dataset.serverNameUrl)
+            .then(response => response.text())
+            .then(response_text => {
+                button.dataset.serverName = response_text;
+            }).catch(err => {
+                console.log(err);
+            });
 
         show_spinner(button);
         fetch(button.dataset.statusUrl)
@@ -216,5 +232,6 @@
         }).finally(() => {
             hide_spinner(button);
         });
+
     }
 </script>

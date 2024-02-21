@@ -5,19 +5,16 @@ from .exceptions import CloudingAPIError
 
 
 class CloudingAPI:
-    def __init__(self, api_key=None, server_id=None):
+    def __init__(self, api_key=None, server_id=None, name=None):
         self.api_key = api_key or settings.CLOUDING_API_KEY
         self.server_id = server_id or settings.CLOUDING_SERVER_ID
-        
+        self._name = name
         if not self.api_key:
             raise ImproperlyConfigured("Missing CLOUDING_API_KEY in settings")
         if not self.server_id:
             raise ImproperlyConfigured("Missing CLOUDING_SERVER_ID")
-    
-    def get_status(self):
-        """@return Enum: 
-            'Creating' 'Starting' 'Active' 'Stopped' 'Stopping' 'Rebooting' 'Resize' 'Unarchiving' 'Archived' 'Archiving' 'Pending' 'ResettingPassword' 'RestoringBackup' 'RestoringSnapshot' 'Deleted' 'Deleting' 'Error' 'Unknown'
-        """
+
+    def get_server_by_id(self, server_id):
         url = f"https://api.clouding.io/v1/servers/{self.server_id}"
         headers = {
             'X-API-KEY': self.api_key,
@@ -27,10 +24,30 @@ class CloudingAPI:
         response = requests.get(url, headers=headers)
         if response.ok:
             data = response.json()
-            return data['status']
+            self.name = data['name']
+            return data
         else:
             raise CloudingAPIError(response.json())
+
+    def get_status(self):
+        """@return Enum: 
+            'Creating' 'Starting' 'Active' 'Stopped' 'Stopping' 'Rebooting' 'Resize' 'Unarchiving' 'Archived' 'Archiving' 'Pending' 'ResettingPassword' 'RestoringBackup' 'RestoringSnapshot' 'Deleted' 'Deleting' 'Error' 'Unknown'
+        """
+        data = self.get_server_by_id(self.server_id)
+        return data['status']
     
+    @property
+    def name(self):
+        if self._name:
+            return self._name
+        
+        self._name = self.get_server_by_id(self.server_id)['name']
+        return self._name
+    
+    @name.setter
+    def name(self, value):
+        self._name = value
+
     def unarchive(self):
         url = f"https://api.clouding.io/v1/servers/{self.server_id}/unarchive"
         headers = {

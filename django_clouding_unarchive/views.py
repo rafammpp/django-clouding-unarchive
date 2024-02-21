@@ -27,7 +27,7 @@ class IsActiveView(CloudingAPIView):
             return HttpResponse('inactive')
         except CloudingAPIError as e:
             return HttpResponseBadRequest(str(e))
-    
+
 
 class UnarchiveView(CloudingAPIView):
     def get(self, request):
@@ -63,3 +63,14 @@ class ServerIsReadyView(CloudingAPIView):
             return HttpResponse('ready' if response.ok else 'not ready')
         except ConnectionError:
             return HttpResponse('not ready')
+
+
+class ServerNameView(CloudingAPIView):
+    def get(self, request):
+        try:
+            server = self.get_server(request)
+            return HttpResponse(server.name)
+        except ImproperlyConfigured as e:
+            return HttpResponseBadRequest(str(e))
+        except CloudingAPIError as e:
+            return HttpResponseBadRequest(str(e))
