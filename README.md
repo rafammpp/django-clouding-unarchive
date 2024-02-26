@@ -37,19 +37,20 @@ Include this in any template to show the button:
 ```
 {% include "django_clouding_unarchive/button.html" %}
 ```
-The view requires the user to be authenticated. So 
+All views from this app requires the user to be authenticated. 
 
 You can also specify some vars to configure the button, all are optional:
-- css_classes: string with the classes to apply to the button.
+- css_classes: string with the css classes to apply to the button.
 - server_id: the server id to unarchive. If not specified, it will use the CLOUDING_SERVER_ID from settings.
+- server_name: the server name to show in the button. If not specified, it will use the name setup in clouding.io
 - on_success_url: the url to link after the unarchive process is done.
-- test_on_success_url: "true" or "false". This will make an http request to also test the availability of the server. If the server is not available, it will wait until it is available and then show the link.
+- test_on_success_url: True or False. This will make an http request to also test the availability of the server. If the server is not available, it will wait until it is available and then show the link.
 - label: the label of the button. Default is "Wake up the server".
-- friendly_messages: "true" or "false". If true, it will show more human friendly messages, like "The server is waking up" instead of "The server is unarchiving".
+- friendly_messages: True or False. If true, it will show more human friendly messages, like "The server is waking up" instead of "The server is unarchiving".
 
 Example:
 ```
-{% include "django_clouding_unarchive/button.html" with css_classes="btn btn-primary" server_id=1234abc on_success_url="https://plausible.example.org" test_on_success_url="true" label="Wake up Plausible" %}
+{% include "django_clouding_unarchive/button.html" with css_classes="btn btn-primary" server_id=1234abc on_success_url="https://plausible.example.org" test_on_success_url=True label="Wake up Plausible" %}
 ```
 
 You can include multiple buttons in the same template, each with different configurations. Make sure the server_id is different in each button.
