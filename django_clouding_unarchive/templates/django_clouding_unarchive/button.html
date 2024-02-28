@@ -1,91 +1,107 @@
 <style>
+    .button-wrapper {
+      margin: 10px;
+    }
     .django-unarchive {
+        all: unset;
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        margin: 1rem 0;
         gap: 1rem;
-        cursor: pointer;
-        padding: 10px 15px;
+        padding: 10px;
         border: none;
+        margin: 10px;
         border-radius: 4px;
-        background-color: var(--button-bg);
         color: var(--button-fg);
+        background: var(--button-bg);
+        min-height: 40px;
+        max-width: 200px;
+        user-select: none;
     }
-
-    .django-unarchive:hover {
+    .django-unarchive:hover, .django-unarchive:disabled  {
+        border: none;
+        color: var(--button-hover-fg);
         background: var(--button-hover-bg);
     }
-
-    .django-unarchive .server_status_display::first-letter {
-        text-transform: uppercase;
+    .django-unarchive[data-ready="ready"] {
+      background: green;
+      cursor: pointer;
     }
-
-    .django-unarchive .active, .django-unarchive .no-active {
-        font-weight: bold;
+    .django-unarchive[data-status="Archived"] {
+      cursor: pointer;
     }
-
     .django-unarchive .loader {
-        width: 1.7rem;
-        height: 1.7rem;
-        border-radius: 50%;
-        position: relative;
-        animation: rotate 1s linear infinite
+      width: 24px;
+      height: auto;
+      margin-left: auto;
+      display: none;
     }
-
-    .django-unarchive .loader::before {
-        content: "";
-        box-sizing: border-box;
-        position: absolute;
-        inset: 0px;
-        border-radius: 50%;
-        border: 0.25rem solid var(--button-fg);
-        animation: prixClipFix 2s linear infinite ;
+    .django-unarchive {
+      width: 100%;
+      margin: 10px 0;
     }
-
-    @keyframes rotate {
-    100%   {transform: rotate(360deg)}
-    }
-
-    @keyframes prixClipFix {
-        0%   {clip-path:polygon(50% 50%,0 0,0 0,0 0,0 0,0 0)}
-        25%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 0,100% 0,100% 0)}
-        50%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,100% 100%,100% 100%)}
-        75%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 100%)}
-        100% {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 0)}
+    #unarchivebutton .module_title {
+      background-image: url('/static/grappelli/images/icons/status-unknown.png') !important;
+      background-size: auto;
+      background-repeat: no-repeat;
+      background-position-x: calc(100% - 10px);
+      background-position-y: center;
+      cursor: help;
     }
 </style>
 
-<button
-    type="button"
-    disabled="disabled"
-    class="django-unarchive {{ css_classes }}"
-    data-on-success-url="{{ on_success_url }}"
-    data-test-on-success-url="{% if test_on_success_url %}test{% endif %}"
-    data-status-url="{% url 'django_clouding_unarchive:server-status' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
-    data-unarchive-url="{% url 'django_clouding_unarchive:unarchive-server' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
-    data-server-name-url="{% url 'django_clouding_unarchive:server-name' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
-    data-friendly-messages="{% if friendly_messages %}friendly{% endif %}"
-    data-server-name="{{ server_name }}"
-    data-setup=""
-    data-status=""
-    data-ready="">
-    <span class="server_status_display"></span>
-    <span class="loader spinner" style="visibility:hidden"></span>
-</button>
 
+<div class="button-wrapper">
+  <button
+      type="button"
+      id="button_id"
+      class="django-unarchive {{ css_classes }}"
+      data-on-success-url="{{ on_success_url }}"
+      data-test-on-success-url="{% if test_on_success_url %}test{% endif %}"
+      data-status-url="{% url 'django_clouding_unarchive:server-status' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
+      data-unarchive-url="{% url 'django_clouding_unarchive:unarchive-server' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
+      data-server-name-url="{% url 'django_clouding_unarchive:server-name' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
+      data-server-name="{{ server_name }}"
+      data-setup=""
+      data-status=""
+      data-ready="">
+
+      <div class="server_status_display"></div>
+
+      <!-- Loader credits: Nikhil Krishnan https://codepen.io/nikhil8krishnan/pen/rVoXJa Added start animations on click button (begin="indefinite") and begin on button click by javascript function 'animate_clock(button)' -->
+      <svg class="loader" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+        viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
+        <circle fill="#ddd" stroke="#fff" stroke-width="12" stroke-miterlimit="10" cx="50" cy="50" r="42"/>
+        <line fill="none" stroke-linecap="round" stroke="#777" stroke-width="8" stroke-miterlimit="10" x1="50" y1="50" x2="50" y2="16">
+          <animateTransform attributeName="transform" dur="2s" type="rotate" from="0 50 50" to="360 50 50" begin="indefinite" repeatCount="indefinite" />
+        </line>
+        <line fill="none" stroke-linecap="round" stroke="#777" stroke-width="8" stroke-miterlimit="10" x1="50" y1="50" x2="50" y2="24">
+          <animateTransform attributeName="transform" dur="60s" type="rotate" from="0 50 50" to="360 50 50" begin="indefinite" repeatCount="indefinite" />
+        </line>
+      </svg>
+  </button>
+</div>
+
+
+  
 <script type="module">
-    function show_spinner(button){
-        let spinner = button.querySelector('.spinner');
-        spinner.style.visibility = 'visible';
-        spinner.style.removeProperty("width");
+    function show_loader(button){
+        // Start the loader animation
+        let elements = button.getElementsByTagName("animateTransform");
+        for (let element of elements)
+            element.beginElement();
+        
+        // Show the loader
+        let loader = button.querySelector('.loader');
+        loader.style.display = 'block';
     }
     
-    function hide_spinner(button){
-        let spinner = button.querySelector('.spinner');
-        spinner.style.visibility = 'hidden';
-        spinner.style.width = "0";
+
+    function hide_loader(button){
+        let loader = button.querySelector('.loader');
+        loader.style.display = 'none';
     }
+
 
     function display_status(button){
         let server_status_display = button.querySelector('.server_status_display');
@@ -93,40 +109,38 @@
         let url = button.dataset.onSuccessUrl;
         let url_need_test = button.dataset.testOnSuccessUrl != "";
         let ready = button.dataset.ready;
-        let friendly_messages = button.dataset.friendlyMessages != "";
-        let server_name = button.dataset.serverName || "the server";
 
         if (status == "Error"){
-            server_status_display.innerHTML = `Error while waking up ${server_name}... Please try again later.`;
-            button.disabled = "";
+            hide_loader(button);
+            button.disabled = false;
+            server_status_display.innerHTML = `Try again later`;
             return;
         }
 
         let active = status == "Active";
         if (active && url && (url_need_test && ready || !url_need_test)){
-            server_status_display.innerHTML = `${server_name} is ready, Click me`;
-            button.disabled = "";
+            server_status_display.innerHTML = `Click to view`;
+            button.disabled = false;
         } else if (active && url && url_need_test && !ready){
-            server_status_display.innerHTML = `Waiting for ${server_name} to be ready...`;
+            button.disabled = true;
+            server_status_display.innerHTML = `Almost ready…`;
         } else if (active){
-            server_status_display.innerHTML = `${server_name} is <span class="active">Active</span> Click me`;
-            button.disabled = "";
+            server_status_display.innerHTML = `Active`; // when we don't have a success url.
+            button.disabled = true;
         } else if (status == "Archived"){
-            button.disabled = "";
-            if (friendly_messages)
-                server_status_display.innerHTML = `Wake up ${server_name}`;
-            else
-                server_status_display.innerHTML = `${server_name} is <span class="no-active">Archived</span>`;
+            button.disabled = false;
+            server_status_display.innerHTML = `Wake it up`;
+        } else if (status == "Archiving"){
+            button.disabled = true;
+            server_status_display.innerHTML = `Going to sleep…`;
         } else {
-            button.disabled = "disabled";
-            if (friendly_messages)
-                server_status_display.innerHTML = `Waking up ${server_name}...`;
-            else
-                server_status_display.innerHTML = `${server_name} is <span class="no-active">${status}</span>`;
+            button.disabled = true;
+            server_status_display.innerHTML = `Waking up…`;
         }
     }
 
-    function update_status_until_active_success_url(button){
+
+    function update_status_until_ready(button){
         let server_status_display = button.querySelector('.server_status_display');
         let url = button.dataset.onSuccessUrl;
         fetch('{% url "django_clouding_unarchive:server-is-ready" %}?url=' + encodeURIComponent(url))
@@ -135,47 +149,54 @@
             if (text == "ready"){
                 button.dataset.ready = "ready";
                 display_status(button);
-                hide_spinner(button);
+                hide_loader(button);
             } else {
                 button.dataset.ready = "";
                 display_status(button);
-                setTimeout(() => update_status_until_active_success_url(button), 5000);
+                setTimeout(() => update_status_until_ready(button), 5000);
             }
         }).catch(err => {
             console.log(err);
             button.dataset.ready = "";
             button.dataset.status = "Error";
+            hide_loader(button);
             display_status(button);
         });
     }
 
-    function update_status_until_active(button){
-        let server_status_display = button.querySelector('.server_status_display');
 
+    // Documentation: https://api.clouding.io/docs#tag/Servers/operation/GetServerById
+    let done_states = ["Active", "Archived", "Stopped", "Deleted", "Error", "Unknown"]; 
+    
+    function update_status_until_done(button){
         fetch(button.dataset.statusUrl)
         .then(response => response.text())
         .then(response_text => {
-            console.log(response_text);
+            console.log(`${button.dataset.serverName} is ${response_text}`);
             button.dataset.status = response_text;
-            display_status(button);
-            if (response_text != "Active"){
-                setTimeout(() => update_status_until_active(button), 5000);
+            
+            if (!done_states.includes(response_text)){
+                display_status(button);
+                setTimeout(() => update_status_until_done(button), 5000);
+            } else if (response_text == "Active" && button.dataset.onSuccessUrl && button.dataset.testOnSuccessUrl){
+                display_status(button);
+                update_status_until_ready(button);
+            } else if (response_text == "Active" && button.dataset.onSuccessUrl){
+                button.dataset.ready = "ready";
+                display_status(button);
+                hide_loader(button);
             } else {
-                if (button.dataset.onSuccessUrl && button.dataset.testOnSuccessUrl){
-                    update_status_until_active_success_url(button);
-                } else if (button.dataset.onSuccessUrl){
-                    button.dataset.ready = "ready";
-                    display_status(button);
-                    hide_spinner(button);
-                }
+                display_status(button);
+                hide_loader(button);
             }
         }).catch(err => {
             console.log(err);
             button.dataset.status = "Error";
             display_status(button);
-            button.disabled = "";
+            button.disabled = false;
         });
     }
+
 
     for (let button of document.querySelectorAll('button.django-unarchive')){
         if (button.dataset.setup == "setup")
@@ -189,18 +210,18 @@
                 window.open(button.dataset.onSuccessUrl, '_blank');
                 return;
             }
-            show_spinner(button);
-            button.disabled = "disabled";
+            show_loader(button);
+            button.disabled = true;
             fetch(button.dataset.unarchiveUrl)
             .then(response => response.text())
             .then(response_text => {
                 console.log(response_text);
-                update_status_until_active(button);
+                update_status_until_done(button);
             }).catch(err => {
                 console.log(err);
                 button.dataset.status = "Error";
                 display_status(button);
-                button.disabled = "";
+                button.disabled = false;
             });
         });
         
@@ -212,26 +233,8 @@
             }).catch(err => {
                 console.log(err);
             });
-
-        show_spinner(button);
-        fetch(button.dataset.statusUrl)
-        .then(response => response.text())
-        .then(response_text => {
-            console.log(response_text);
-            button.dataset.status = response_text;
-            if (response_text == "Active" && button.dataset.onSuccessUrl && button.dataset.testOnSuccessUrl){
-                update_status_until_active_success_url(button);
-            } else if (response_text == "Active"){
-                button.dataset.ready = "ready";
-            }
-            display_status(button);
-        }).catch(err => {
-            console.log(err);
-            button.dataset.status = "Error";
-            display_status(button);
-        }).finally(() => {
-            hide_spinner(button);
-        });
-
+        
+        show_loader(button);
+        update_status_until_done(button);
     }
 </script>
