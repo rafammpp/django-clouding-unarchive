@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: django-clouding-unarchive
-Version: 0.1
+Version: 0.2
 Summary: A Django app to unarchive a clouding server.
 Home-page: https://github.com/rafammpp/django-clouding-unarchive
 Author: Rafa Martín Pérez
