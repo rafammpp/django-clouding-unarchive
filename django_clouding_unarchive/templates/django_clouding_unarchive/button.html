@@ -1,7 +1,8 @@
 <style>
     .button-wrapper {
-      margin: 10px;
+        margin: 10px;
     }
+
     .django-unarchive {
         all: unset;
         display: flex;
@@ -18,71 +19,71 @@
         max-width: 200px;
         user-select: none;
     }
+
     .django-unarchive:hover, .django-unarchive:disabled  {
         border: none;
         color: var(--button-hover-fg);
         background: var(--button-hover-bg);
     }
+
     .django-unarchive[data-ready="ready"] {
-      background: green;
-      cursor: pointer;
+        background: green;
+        cursor: pointer;
     }
+
     .django-unarchive[data-status="Archived"] {
-      cursor: pointer;
+        cursor: pointer;
     }
+
     .django-unarchive .loader {
-      width: 24px;
-      height: auto;
-      margin-left: auto;
-      display: none;
+        width: 24px;
+        height: auto;
+        margin-left: auto;
+        display: none;
     }
+
     .django-unarchive {
-      width: 100%;
-      margin: 10px 0;
+        width: 100%;
+        margin: 10px 0;
     }
+
     #unarchivebutton .module_title {
-      background-image: url('/static/grappelli/images/icons/status-unknown.png') !important;
-      background-size: auto;
-      background-repeat: no-repeat;
-      background-position-x: calc(100% - 10px);
-      background-position-y: center;
-      cursor: help;
+        background-image: url('/static/grappelli/images/icons/status-unknown.png') !important;
+        background-size: auto;
+        background-repeat: no-repeat;
+        background-position-x: calc(100% - 10px);
+        background-position-y: center;
+        cursor: help;
     }
 </style>
 
-
 <div class="button-wrapper">
-  <button
-      type="button"
-      id="button_id"
-      class="django-unarchive {{ css_classes }}"
-      data-on-success-url="{{ on_success_url }}"
-      data-test-on-success-url="{% if test_on_success_url %}test{% endif %}"
-      data-status-url="{% url 'django_clouding_unarchive:server-status' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
-      data-unarchive-url="{% url 'django_clouding_unarchive:unarchive-server' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
-      data-server-name-url="{% url 'django_clouding_unarchive:server-name' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
-      data-server-name="{{ server_name }}"
-      data-setup=""
-      data-status=""
-      data-ready="">
-
-      <div class="server_status_display"></div>
-
-      <!-- Loader credits: Nikhil Krishnan https://codepen.io/nikhil8krishnan/pen/rVoXJa Added start animations on click button (begin="indefinite") and begin on button click by javascript function 'animate_clock(button)' -->
-      <svg class="loader" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-        viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
-        <circle fill="#ddd" stroke="#fff" stroke-width="12" stroke-miterlimit="10" cx="50" cy="50" r="42"/>
-        <line fill="none" stroke-linecap="round" stroke="#777" stroke-width="8" stroke-miterlimit="10" x1="50" y1="50" x2="50" y2="16">
-          <animateTransform attributeName="transform" dur="2s" type="rotate" from="0 50 50" to="360 50 50" begin="indefinite" repeatCount="indefinite" />
-        </line>
-        <line fill="none" stroke-linecap="round" stroke="#777" stroke-width="8" stroke-miterlimit="10" x1="50" y1="50" x2="50" y2="24">
-          <animateTransform attributeName="transform" dur="60s" type="rotate" from="0 50 50" to="360 50 50" begin="indefinite" repeatCount="indefinite" />
-        </line>
-      </svg>
-  </button>
+    <button
+        type="button"
+        id="button_id"
+        class="django-unarchive {{ css_classes }}"
+        data-on-success-url="{{ on_success_url }}"
+        data-test-on-success-url="{% if test_on_success_url %}test{% endif %}"
+        data-status-url="{% url 'django_clouding_unarchive:server-status' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
+        data-unarchive-url="{% url 'django_clouding_unarchive:unarchive-server' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
+        data-server-name-url="{% url 'django_clouding_unarchive:server-name' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
+        data-server-name="{{ server_name }}"
+        data-setup=""
+        data-status=""
+        data-ready="">
+        <div class="server_status_display"></div>
+        <!-- Loader credits: Nikhil Krishnan https://codepen.io/nikhil8krishnan/pen/rVoXJa Added start animations on click button (begin="indefinite") and begin on button click by javascript function 'animate_clock(button)' -->
+        <svg class="loader" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
+            <circle fill="#ddd" stroke="#fff" stroke-width="12" stroke-miterlimit="10" cx="50" cy="50" r="42"/>
+            <line fill="none" stroke-linecap="round" stroke="#777" stroke-width="8" stroke-miterlimit="10" x1="50" y1="50" x2="50" y2="16">
+            <animateTransform attributeName="transform" dur="2s" type="rotate" from="0 50 50" to="360 50 50" begin="indefinite" repeatCount="indefinite" />
+            </line>
+            <line fill="none" stroke-linecap="round" stroke="#777" stroke-width="8" stroke-miterlimit="10" x1="50" y1="50" x2="50" y2="24">
+            <animateTransform attributeName="transform" dur="60s" type="rotate" from="0 50 50" to="360 50 50" begin="indefinite" repeatCount="indefinite" />
+            </line>
+        </svg>
+    </button>
 </div>
-
-
   
 <script type="module">
     function show_loader(button){
