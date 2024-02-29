@@ -1,5 +1,5 @@
 <style>
-    .button-wrapper {
+    .django-unarchive-wrapper {
         margin: 10px;
     }
 
@@ -18,6 +18,7 @@
         min-height: 40px;
         max-width: 200px;
         user-select: none;
+        min-width: 150px;
     }
 
     .django-unarchive:hover, .django-unarchive:disabled  {
@@ -41,23 +42,9 @@
         margin-left: auto;
         display: none;
     }
-
-    .django-unarchive {
-        width: 100%;
-        margin: 10px 0;
-    }
-
-    #unarchivebutton .module_title {
-        background-image: url('/static/grappelli/images/icons/status-unknown.png') !important;
-        background-size: auto;
-        background-repeat: no-repeat;
-        background-position-x: calc(100% - 10px);
-        background-position-y: center;
-        cursor: help;
-    }
 </style>
 
-<div class="button-wrapper">
+<div class="django-unarchive-wrapper">
     <button
         type="button"
         id="button_id"
@@ -69,9 +56,9 @@
         data-server-name-url="{% url 'django_clouding_unarchive:server-name' %}{% if server_id %}?server_id={{ server_id }}{% endif %}"
         data-server-name="{{ server_name }}"
         data-setup=""
-        data-status=""
+        data-status="first_query"
         data-ready="">
-        <div class="server_status_display"></div>
+        <div class="server_status_display">Loading…</div>
         <!-- Loader credits: Nikhil Krishnan https://codepen.io/nikhil8krishnan/pen/rVoXJa Added start animations on click button (begin="indefinite") and begin on button click by javascript function 'animate_clock(button)' -->
         <svg class="loader" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
             <circle fill="#ddd" stroke="#fff" stroke-width="12" stroke-miterlimit="10" cx="50" cy="50" r="42"/>
@@ -174,12 +161,17 @@
         .then(response => response.text())
         .then(response_text => {
             console.log(`${button.dataset.serverName} is ${response_text}`);
+            let first_query = button.dataset.status == "first_query";
             button.dataset.status = response_text;
             
             if (!done_states.includes(response_text)){
+                if (first_query)
+                    show_loader(button);
                 display_status(button);
                 setTimeout(() => update_status_until_done(button), 5000);
             } else if (response_text == "Active" && button.dataset.onSuccessUrl && button.dataset.testOnSuccessUrl){
+                if (first_query)
+                    show_loader(button);
                 display_status(button);
                 update_status_until_ready(button);
             } else if (response_text == "Active" && button.dataset.onSuccessUrl){
@@ -235,7 +227,6 @@
                 console.log(err);
             });
         
-        show_loader(button);
         update_status_until_done(button);
     }
 </script>

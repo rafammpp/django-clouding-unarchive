@@ -8,6 +8,8 @@ django_clouding_unarchive/__init__.py
 django_clouding_unarchive/api_models.py
 django_clouding_unarchive/apps.py
 django_clouding_unarchive/exceptions.py
+django_clouding_unarchive/test_api_models.py
+django_clouding_unarchive/test_views.py
 django_clouding_unarchive/urls.py
 django_clouding_unarchive/views.py
 django_clouding_unarchive.egg-info/PKG-INFO
