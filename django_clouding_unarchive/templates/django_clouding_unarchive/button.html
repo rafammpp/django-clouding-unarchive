@@ -57,6 +57,7 @@
         data-server-name="{{ server_name }}"
         data-setup=""
         data-status="first_query"
+        data-error-message=""
         data-ready="">
         <div class="server_status_display">Loading…</div>
         <!-- Loader credits: Nikhil Krishnan https://codepen.io/nikhil8krishnan/pen/rVoXJa Added start animations on click button (begin="indefinite") and begin on button click by javascript function 'animate_clock(button)' -->
@@ -101,7 +102,10 @@
         if (status == "Error"){
             hide_loader(button);
             button.disabled = false;
-            server_status_display.innerHTML = `Try again later`;
+            if(button.dataset.errorMessage)
+                server_status_display.innerHTML = `Error: ${button.dataset.errorMessage}`;
+            else
+                server_status_display.innerHTML = `Try again later`;
             return;
         }
 
@@ -158,7 +162,12 @@
     
     function update_status_until_done(button){
         fetch(button.dataset.statusUrl)
-        .then(response => response.text())
+        .then(response => { 
+            if(!response.ok)
+                return Promise.reject(response);
+            
+            return response.text()
+        })
         .then(response_text => {
             console.log(`${button.dataset.serverName} is ${response_text}`);
             let first_query = button.dataset.status == "first_query";
@@ -182,11 +191,19 @@
                 display_status(button);
                 hide_loader(button);
             }
-        }).catch(err => {
-            console.log(err);
+        }).catch(response => {
+            console.log(response);
             button.dataset.status = "Error";
-            display_status(button);
-            button.disabled = false;
+            if(response.status == 500){
+                button.dataset.errorMessage = "Internal Server Error";
+                display_status(button);
+                button.disabled = false;
+            } else
+                response.text().then(text => {
+                    button.dataset.errorMessage = text;
+                    display_status(button);
+                    button.disabled = false;
+                });            
         });
     }
 

@@ -12,7 +12,7 @@ In settings place this two vars:
 ```
 # Clouding
 CLOUDING_API_KEY = env('CLOUDING_API_KEY')
-CLOUDING_SERVER_ID = env('CLOUDING_SERVER_ID') # This is optional if you specify it in the button.
+CLOUDING_SERVER_ID = env('CLOUDING_SERVER_ID', default=None) # You can specify it with the env var or in each button.
 ```
 And setup them properly in env variables.
 
