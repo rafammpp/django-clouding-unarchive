@@ -135,10 +135,9 @@
     function update_status_until_ready(button){
         let server_status_display = button.querySelector('.server_status_display');
         let url = button.dataset.onSuccessUrl;
-        fetch('{% url "django_clouding_unarchive:server-is-ready" %}?url=' + encodeURIComponent(url))
-        .then(response => response.text())
-        .then(text => {
-            if (text == "ready"){
+        fetch(url, {method: "HEAD"})
+        .then(response => {
+            if (response.ok){
                 button.dataset.ready = "ready";
                 display_status(button);
                 hide_loader(button);
@@ -147,7 +146,8 @@
                 display_status(button);
                 setTimeout(() => update_status_until_ready(button), 5000);
             }
-        }).catch(err => {
+        })
+        .catch(err => {
             console.log(err);
             button.dataset.ready = "";
             button.dataset.status = "Error";

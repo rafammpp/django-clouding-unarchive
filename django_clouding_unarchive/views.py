@@ -53,18 +53,6 @@ class StatusView(CloudingAPIView):
             return HttpResponseBadRequest(str(e))
 
 
-class ServerIsReadyView(CloudingAPIView):
-    def get(self, request):
-        url = request.GET.get('url')
-        try:
-            if not url:
-                return HttpResponseBadRequest('url parameter is required')
-            response = requests.head(url)
-            return HttpResponse('ready' if response.ok else 'not ready')
-        except ConnectionError:
-            return HttpResponse('not ready')
-
-
 class ServerNameView(CloudingAPIView):
     def get(self, request):
         try:
